@@ -125,9 +125,9 @@ function Quiz({
         console.error("Field 'questionType' is required.");
         return false;
       }
-      if (questionType !== 'text' && questionType !== 'photo') {
+      if (questionType !== 'text' && questionType !== 'photo' && questionType !== 'order') {
         console.error(
-          "The value of 'questionType' is either 'text' or 'photo'.",
+          "The value of 'questionType' is either 'text', 'photo', or 'order'.",
         );
         return false;
       }
