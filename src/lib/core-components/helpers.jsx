@@ -26,61 +26,56 @@ export const checkAnswer = (index, correctAnswer, answerSelectionType, answers, 
   const indexStr = `${index}`;
   const disabledAll = Object.keys(answers).map(() => ({ disabled: true }));
   const userInputCopy = [...userInput];
+
   if (answerSelectionType === 'single') {
     if (userInputCopy[currentQuestionIndex] === undefined) {
       userInputCopy[currentQuestionIndex] = index;
     }
 
     if (indexStr === correctAnswer) {
-      if (incorrect.indexOf(currentQuestionIndex) < 0 && correct.indexOf(currentQuestionIndex) < 0) {
+      if (!incorrect.includes(currentQuestionIndex) && !correct.includes(currentQuestionIndex)) {
         correct.push(currentQuestionIndex);
       }
 
-      setButtons((prevState) => ({
+      setButtons(prevState => ({
         ...prevState,
         ...disabledAll,
         [index - 1]: {
-          className: (indexStr === correctAnswer) ? 'correct' : 'incorrect',
+          className: 'correct',
         },
       }));
 
       setIsCorrect(true);
       setIncorrectAnswer(false);
-      setCorrect(correct);
+      setCorrect([...correct]);
       setShowNextQuestionButton(true);
     } else {
-      if (correct.indexOf(currentQuestionIndex) < 0 && incorrect.indexOf(currentQuestionIndex) < 0) {
+      if (!correct.includes(currentQuestionIndex) && !incorrect.includes(currentQuestionIndex)) {
         incorrect.push(currentQuestionIndex);
       }
 
       if (continueTillCorrect) {
-        setButtons((prevState) => (
-          {
-
-            ...prevState,
-            [index - 1]: {
-              disabled: !prevState[index - 1],
-            },
-          }
-        ));
+        setButtons(prevState => ({
+          ...prevState,
+          [index - 1]: {
+            disabled: true,
+          },
+        }));
       } else {
-        setButtons((prevState) => (
-          {
-
-            ...prevState,
-            ...disabledAll,
-            [index - 1]: {
-              className: (indexStr === correctAnswer) ? 'correct' : 'incorrect',
-            },
-          }
-        ));
+        setButtons(prevState => ({
+          ...prevState,
+          ...disabledAll,
+          [index - 1]: {
+            className: 'incorrect',
+          },
+        }));
 
         setShowNextQuestionButton(true);
       }
 
       setIncorrectAnswer(true);
       setIsCorrect(false);
-      setIncorrect(incorrect);
+      setIncorrect([...incorrect]);
     }
   } else {
     const maxNumberOfMultipleSelection = correctAnswer.length;
@@ -89,69 +84,54 @@ export const checkAnswer = (index, correctAnswer, answerSelectionType, answers, 
       userInputCopy[currentQuestionIndex] = [];
     }
 
-    if (userInputCopy[currentQuestionIndex].length < maxNumberOfMultipleSelection) {
-      userInputCopy[currentQuestionIndex].push(index);
+    const currentSelection = userInputCopy[currentQuestionIndex];
+    if (currentSelection.length < maxNumberOfMultipleSelection) {
+      currentSelection.push(index);
 
       if (correctAnswer.includes(index)) {
-        if (userInputCopy[currentQuestionIndex].length <= maxNumberOfMultipleSelection) {
-          setButtons((prevState) => ({
-            ...prevState,
-            [index - 1]: {
-              disabled: !prevState[index - 1],
-              className: (correctAnswer.includes(index)) ? 'correct' : 'incorrect',
-            },
-          }));
-        }
-      } else if (userInputCopy[currentQuestionIndex].length <= maxNumberOfMultipleSelection) {
-        setButtons((prevState) => ({
+        setButtons(prevState => ({
           ...prevState,
           [index - 1]: {
-            className: (correctAnswer.includes(index)) ? 'correct' : 'incorrect',
+            disabled: true,
+            className: 'correct',
+          },
+        }));
+      } else {
+        setButtons(prevState => ({
+          ...prevState,
+          [index - 1]: {
+            className: 'incorrect',
           },
         }));
       }
     }
 
-    if (maxNumberOfMultipleSelection === userAttempt) {
-      let cnt = 0;
-      for (let i = 0; i < correctAnswer.length; i += 1) {
-        if (userInputCopy[currentQuestionIndex].includes(correctAnswer[i])) {
-          cnt += 1;
-        }
-      }
+    if (currentSelection.length === maxNumberOfMultipleSelection) {
+      const isCorrectSelection = correctAnswer.every(ans => currentSelection.includes(ans));
 
-      for (let i = 0; i < answers.length; i += 1) {
-        if (correctAnswer.includes(i + 1)) {
-          setButtons((prevState) => ({
-            ...prevState,
-            [i]: {},
-          }));
-        }
-      }
-
-      if (cnt === maxNumberOfMultipleSelection) {
+      if (isCorrectSelection) {
         correct.push(currentQuestionIndex);
-
         setIsCorrect(true);
         setIncorrectAnswer(false);
-        setCorrect(correct);
+        setCorrect([...correct]);
         setShowNextQuestionButton(true);
         setUserAttempt(1);
       } else {
         incorrect.push(currentQuestionIndex);
-
         setIncorrectAnswer(true);
         setIsCorrect(false);
-        setIncorrect(incorrect);
+        setIncorrect([...incorrect]);
         setShowNextQuestionButton(true);
         setUserAttempt(1);
       }
-    } else if (!showNextQuestionButton) {
+    } else {
       setUserAttempt(userAttempt + 1);
     }
   }
+
   setUserInput(userInputCopy);
 };
+
 
 export const selectAnswer = (index, correctAnswer, answerSelectionType, answers, {
   userInput,
